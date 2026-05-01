@@ -316,6 +316,19 @@ body {
   margin-bottom: 2rem;
 }
 
+.app-footer {
+  border-top: 1px solid rgba(51, 65, 85, 0.55);
+  color: var(--muted-text);
+  margin-top: 2rem;
+  padding: 1.25rem 0 0.5rem;
+  text-align: center;
+}
+
+.app-footer p {
+  font-size: 0.95rem;
+  margin: 0.2rem 0;
+}
+
 @media (max-width: 560px) {
   .app-container {
     padding: 1rem;

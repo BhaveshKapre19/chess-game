@@ -184,6 +184,11 @@ function App() {
           <MoveHistory history={history} pgn={pgn} />
         </aside>
       </main>
+
+      <footer className="app-footer">
+        <p>This game was developed for fun with React and Stockfish.</p>
+        <p>Developed by Bhavesh.</p>
+      </footer>
     </div>
   );
 }
