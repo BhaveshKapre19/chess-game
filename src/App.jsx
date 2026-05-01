@@ -21,10 +21,16 @@ function App() {
   } = useChessGame();
 
   const engineRef = useRef(null);
+  const isThinkingRef = useRef(false);
+  const activeEngineTurnRef = useRef(null);
   const [isThinking, setIsThinking] = useState(false);
   const [difficulty, setDifficulty] = useState(8);
   const [boardOrientation, setBoardOrientation] = useState('white');
   const [engineError, setEngineError] = useState('');
+
+  useEffect(() => {
+    isThinkingRef.current = isThinking;
+  }, [isThinking]);
 
   useEffect(() => {
     let errorTimer = null;
@@ -50,38 +56,44 @@ function App() {
 
   // Handle engine turn
   useEffect(() => {
-    let isMounted = true;
+    if (turn !== 'b' || isGameOver || engineError || !engineRef.current || isThinkingRef.current) {
+      return undefined;
+    }
+
+    const turnKey = `${fen}:${difficulty}`;
+    activeEngineTurnRef.current = turnKey;
+    setIsThinking(true);
 
     const getEngineMove = async () => {
-      if (!isMounted) return;
+      try {
+        const move = await engineRef.current.getBestMove(fen, difficulty);
 
-      if (turn === 'b' && !isGameOver && !isThinking && !engineError && engineRef.current) {
-        setIsThinking(true);
+        if (activeEngineTurnRef.current !== turnKey) {
+          return;
+        }
 
-        try {
-          const move = await engineRef.current.getBestMove(fen, difficulty);
-          if (!isMounted) return;
+        if (move && move !== '(none)' && move !== '0000') {
+          const sourceSquare = move.substring(0, 2);
+          const targetSquare = move.substring(2, 4);
+          const promotion = move.length > 4 ? move[4] : undefined;
 
-          if (move && move !== '(none)' && move !== '0000') {
-            const sourceSquare = move.substring(0, 2);
-            const targetSquare = move.substring(2, 4);
-            const promotion = move.length > 4 ? move[4] : undefined;
-
-            makeMove({
-              from: sourceSquare,
-              to: targetSquare,
-              promotion,
-            });
-          } else {
-            setEngineError('Stockfish did not return a valid move.');
-          }
-        } catch (error) {
-          const message = error.message || 'Stockfish could not calculate a move.';
-          if (message !== 'Engine request cancelled.') {
-            setEngineError(message);
-          }
-        } finally {
-          if (isMounted) setIsThinking(false);
+          makeMove({
+            from: sourceSquare,
+            to: targetSquare,
+            promotion,
+          });
+        } else {
+          setEngineError('Stockfish did not return a valid move.');
+        }
+      } catch (error) {
+        const message = error.message || 'Stockfish could not calculate a move.';
+        if (message !== 'Engine request cancelled.') {
+          setEngineError(message);
+        }
+      } finally {
+        if (activeEngineTurnRef.current === turnKey) {
+          activeEngineTurnRef.current = null;
+          setIsThinking(false);
         }
       }
     };
@@ -89,9 +101,13 @@ function App() {
     getEngineMove();
 
     return () => {
-      isMounted = false;
+      if (activeEngineTurnRef.current === turnKey) {
+        activeEngineTurnRef.current = null;
+        engineRef.current?.terminate();
+        setIsThinking(false);
+      }
     };
-  }, [fen, turn, isGameOver, isThinking, engineError, difficulty, makeMove]);
+  }, [fen, turn, isGameOver, engineError, difficulty, makeMove]);
 
   const onDrop = (sourceSquare, targetSquare, promotion) => {
     if (isThinking || isGameOver) return false;
@@ -111,6 +127,8 @@ function App() {
   };
 
   const handleNewGame = useCallback(() => {
+    activeEngineTurnRef.current = null;
+    setIsThinking(false);
     resetGame();
     if (engineRef.current) {
       engineRef.current.newGame().catch((error) => {
