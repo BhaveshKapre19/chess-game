@@ -1,4 +1,4 @@
-import { FlipVertical, RotateCcw } from 'lucide-react';
+import { FlipVertical, RotateCcw, Undo2 } from 'lucide-react';
 
 const LEVELS = [
   { label: 'Easy', depth: 2 },
@@ -10,11 +10,18 @@ export function GameControls({
   difficulty,
   setDifficulty,
   onNewGame,
+  onUndo,
   onFlipBoard,
-  isThinking
+  isThinking,
+  canUndo,
 }) {
   return (
     <div className="game-controls">
+      <div className="controls-heading">
+        <span className="section-kicker">Controls</span>
+        <p>Tune the engine strength, reset the board, or flip your view.</p>
+      </div>
+
       <div className="control-group">
         <label htmlFor="difficulty">Difficulty:</label>
         <select
@@ -35,6 +42,9 @@ export function GameControls({
       <div className="button-group">
         <button onClick={onNewGame} disabled={isThinking} className="control-btn primary">
           <RotateCcw size={16} /> New Game
+        </button>
+        <button onClick={onUndo} disabled={!canUndo} className="control-btn secondary">
+          <Undo2 size={16} /> Undo
         </button>
         <button onClick={onFlipBoard} disabled={isThinking} className="control-btn secondary">
           <FlipVertical size={16} /> Flip Board

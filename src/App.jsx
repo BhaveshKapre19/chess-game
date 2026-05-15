@@ -8,14 +8,19 @@ import { GameStatus } from './components/GameStatus';
 import './index.css';
 
 function App() {
+  const logoUrl = `${import.meta.env.BASE_URL}chess-connect-logo.png`;
+
   const {
+    chess,
     fen,
     history,
     pgn,
     lastMove,
     makeMove,
     resetGame,
+    undoMoves,
     statusMessage,
+    statusPrompt,
     isGameOver,
     turn
   } = useChessGame();
@@ -27,6 +32,31 @@ function App() {
   const [difficulty, setDifficulty] = useState(8);
   const [boardOrientation, setBoardOrientation] = useState('white');
   const [engineError, setEngineError] = useState('');
+  const [selectedSquare, setSelectedSquare] = useState(null);
+  const [moveHints, setMoveHints] = useState([]);
+  const canUndo = history.length > 0;
+
+  const clearMoveHints = useCallback(() => {
+    setSelectedSquare(null);
+    setMoveHints([]);
+  }, []);
+
+  const updateMoveHints = useCallback((square) => {
+    if (!square) {
+      clearMoveHints();
+      return [];
+    }
+
+    const moves = chess.moves({ square, verbose: true });
+    const hints = moves.map((move) => ({
+      square: move.to,
+      isCapture: move.flags.includes('c') || move.flags.includes('e'),
+    }));
+
+    setSelectedSquare(square);
+    setMoveHints(hints);
+    return moves;
+  }, [chess, clearMoveHints]);
 
   useEffect(() => {
     isThinkingRef.current = isThinking;
@@ -39,7 +69,7 @@ function App() {
       engineRef.current = new Engine();
     } catch {
       errorTimer = window.setTimeout(() => {
-        setEngineError('Failed to connect to the Stockfish engine server.');
+        setEngineError('Failed to load the Stockfish engine.');
       }, 0);
     }
 
@@ -77,6 +107,7 @@ function App() {
           const targetSquare = move.substring(2, 4);
           const promotion = move.length > 4 ? move[4] : undefined;
 
+          clearMoveHints();
           makeMove({
             from: sourceSquare,
             to: targetSquare,
@@ -107,9 +138,9 @@ function App() {
         setIsThinking(false);
       }
     };
-  }, [fen, turn, isGameOver, engineError, difficulty, makeMove]);
+  }, [clearMoveHints, fen, turn, isGameOver, engineError, difficulty, makeMove]);
 
-  const onDrop = (sourceSquare, targetSquare, promotion) => {
+  const onDrop = useCallback((sourceSquare, targetSquare, promotion) => {
     if (isThinking || isGameOver) return false;
     if (turn !== 'w') return false;
 
@@ -121,22 +152,62 @@ function App() {
 
     if (moveResult) {
       setEngineError('');
+      clearMoveHints();
     }
 
     return Boolean(moveResult);
-  };
+  }, [clearMoveHints, isGameOver, isThinking, makeMove, turn]);
+
+  const handleSquareClick = useCallback((square) => {
+    if (isThinking || isGameOver || turn !== 'w') {
+      return;
+    }
+
+    if (selectedSquare && moveHints.some((hint) => hint.square === square)) {
+      const moved = onDrop(selectedSquare, square, 'q');
+      if (!moved) {
+        updateMoveHints(square);
+      }
+      return;
+    }
+
+    const piece = chess.get(square);
+    if (!piece || piece.color !== 'w') {
+      clearMoveHints();
+      return;
+    }
+
+    const moves = updateMoveHints(square);
+    if (moves.length === 0) {
+      clearMoveHints();
+    }
+  }, [chess, clearMoveHints, isGameOver, isThinking, moveHints, onDrop, selectedSquare, turn, updateMoveHints]);
 
   const handleNewGame = useCallback(() => {
     activeEngineTurnRef.current = null;
+    engineRef.current?.terminate();
+    engineRef.current = new Engine();
     setIsThinking(false);
+    clearMoveHints();
     resetGame();
-    if (engineRef.current) {
-      engineRef.current.newGame().catch((error) => {
-        setEngineError(error.message || 'Could not reset the Stockfish engine server.');
-      });
-    }
     setEngineError('');
-  }, [resetGame]);
+  }, [clearMoveHints, resetGame]);
+
+  const handleUndo = useCallback(() => {
+    activeEngineTurnRef.current = null;
+    engineRef.current?.terminate();
+    engineRef.current = new Engine();
+    setIsThinking(false);
+    setEngineError('');
+    clearMoveHints();
+
+    if (turn === 'w') {
+      undoMoves(2);
+      return;
+    }
+
+    undoMoves(1);
+  }, [clearMoveHints, turn, undoMoves]);
 
   const handleFlipBoard = () => {
     setBoardOrientation((prev) => (prev === 'white' ? 'black' : 'white'));
@@ -145,8 +216,23 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>React Chess</h1>
-        <p>Powered by Stockfish WebAssembly</p>
+        <div className="brand-lockup">
+          <img className="brand-logo" src={logoUrl} alt="Chess Connect logo" />
+          <div className="brand-copy">
+            <span className="brand-eyebrow">React x Stockfish</span>
+            <h1>Chess Connect</h1>
+            <p>
+              A clean, fast chess board for casual play against Stockfish, built to feel crisp on
+              desktop and mobile.
+            </p>
+          </div>
+        </div>
+
+        <div className="hero-tags" aria-label="Application highlights">
+          <span className="hero-tag">You play White</span>
+          <span className="hero-tag">Drag and drop board</span>
+          <span className="hero-tag">{isThinking ? 'Stockfish thinking' : 'Stockfish ready'}</span>
+        </div>
       </header>
 
       {engineError && (
@@ -157,18 +243,35 @@ function App() {
 
       <main className="main-content">
         <div className="board-section">
-          <ChessBoardComponent
-            fen={fen}
-            onDrop={onDrop}
-            boardOrientation={boardOrientation}
-            isThinking={isThinking}
-            lastMove={lastMove}
-          />
+          <section className="board-panel">
+            <div className="panel-heading">
+              <div>
+                <span className="panel-label">Live Board</span>
+                <h2>Play against the engine</h2>
+              </div>
+              <div className="turn-indicator">
+                <span className={`turn-dot ${turn === 'w' ? 'white-turn' : 'black-turn'}`} />
+                <span>{turn === 'w' ? 'Your move' : 'Computer move'}</span>
+              </div>
+            </div>
+
+            <ChessBoardComponent
+              fen={fen}
+              onDrop={onDrop}
+              onSquareClick={handleSquareClick}
+              boardOrientation={boardOrientation}
+              isThinking={isThinking}
+              lastMove={lastMove}
+              selectedSquare={selectedSquare}
+              moveHints={moveHints}
+            />
+          </section>
         </div>
 
         <aside className="sidebar">
           <GameStatus 
             statusMessage={statusMessage} 
+            statusPrompt={statusPrompt}
             isGameOver={isGameOver} 
             isThinking={isThinking} 
           />
@@ -177,8 +280,10 @@ function App() {
             difficulty={difficulty}
             setDifficulty={setDifficulty}
             onNewGame={handleNewGame}
+            onUndo={handleUndo}
             onFlipBoard={handleFlipBoard}
             isThinking={isThinking}
+            canUndo={canUndo}
           />
 
           <MoveHistory history={history} pgn={pgn} />

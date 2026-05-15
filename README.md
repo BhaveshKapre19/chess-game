@@ -1,12 +1,12 @@
 # React Stockfish Chess
 
-A React chess app with a static frontend and a separate Stockfish engine server.
+A single-deploy React chess app powered by `chess.js`, `react-chessboard`, and Stockfish running directly in the browser as a Web Worker.
 
 ## Features
 
 - Drag-and-drop chessboard powered by `react-chessboard`
 - Legal move validation and PGN generation from `chess.js`
-- Stockfish AI replies automatically through a separate Node engine API
+- Stockfish AI replies automatically from an in-browser Web Worker
 - Easy, Medium, and Hard difficulty levels
 - Last-move highlighting
 - Game status for turn, check, checkmate, stalemate, repetition, and insufficient material
@@ -18,10 +18,8 @@ A React chess app with a static frontend and a separate Stockfish engine server.
 ```text
 react-stockfish-chess/
   public/
-  scripts/
-    dev.js
-  server/
-    engineServer.js
+    stockfish-18-lite-single.js
+    stockfish-18-lite-single.wasm
   src/
     components/
     hooks/
@@ -29,9 +27,7 @@ react-stockfish-chess/
     App.jsx
     index.css
     main.jsx
-  .env.example
   netlify.toml
-  render.yaml
   vercel.json
   package.json
   vite.config.js
@@ -45,7 +41,7 @@ react-stockfish-chess/
 npm install
 ```
 
-2. Start both the frontend and the engine server:
+2. Start the app:
 
 ```bash
 npm run dev
@@ -57,66 +53,12 @@ npm run dev
 http://127.0.0.1:5173
 ```
 
-You can also run each side separately:
-
-```bash
-npm run dev:client
-npm run dev:engine
-```
-
-## Environment Variables
-
-Copy values from `.env.example`.
-
-Frontend:
-
-```bash
-VITE_ENGINE_URL=https://your-engine-service.example.com
-```
-
-Engine server:
-
-```bash
-ENGINE_HOST=0.0.0.0
-ENGINE_PORT=8787
-ENGINE_CORS_ORIGIN=https://your-frontend-domain.example.com
-```
-
 ## Deployment
-
-Frontend:
 
 - Vercel is ready via `vercel.json`
 - Netlify is ready via `netlify.toml`
-- Before building the frontend, set `VITE_ENGINE_URL` to your deployed engine URL
-
-Engine server:
-
-- Deploy `server/engineServer.js` as a separate Node service
-- Render is ready via `render.yaml`
-- The production start command is:
-
-```bash
-npm start
-```
-
-Health endpoint:
-
-```text
-GET /health
-```
-
-Best move endpoint:
-
-```text
-POST /bestmove
-```
-
-Example request body:
-
-```json
-{ "fen": "current FEN", "depth": 8 }
-```
+- No separate backend is required
+- The Stockfish worker and `.wasm` file are bundled from `public/` and deployed with the frontend
 
 ## Build
 
