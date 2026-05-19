@@ -138,6 +138,29 @@ body {
   font-size: 0.92rem;
 }
 
+.announcement-banner {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 211, 105, 0.24);
+  background: linear-gradient(135deg, rgba(255, 211, 105, 0.12), rgba(39, 182, 255, 0.08));
+  color: #f4f8ff;
+}
+
+.announcement-label {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  color: #ffe49a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.announcement-banner p {
+  color: #e6eef9;
+  font-size: 0.95rem;
+}
+
 .main-content {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);

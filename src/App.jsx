@@ -233,6 +233,15 @@ function App() {
           <span className="hero-tag">Drag and drop board</span>
           <span className="hero-tag">{isThinking ? 'Stockfish thinking' : 'Stockfish ready'}</span>
         </div>
+
+        <div className="announcement-banner">
+          <span className="announcement-label">HelloTalk Update</span>
+          <p>
+            Hello friends, if you are here from my HelloTalk link, I want to tell you that my
+            previous account was deleted. I tried recovering it but failed, so I created a new
+            one. Please add my new account. My HelloTalk ID: <strong>@sun_bhavesh2</strong>
+          </p>
+        </div>
       </header>
 
       {engineError && (
@@ -293,6 +302,7 @@ function App() {
       <footer className="app-footer">
         <p>This game was developed for fun with React and Stockfish.</p>
         <p>Developed by Bhavesh.</p>
+        <p>Hello my friend if you came here from hellotalk i want to tell you that my account was deleted , and i tried recovering it but failed , so i created a new one so please message me there my hellotalk id:-@sun_bhavesh2</p>
       </footer>
     </div>
   );
