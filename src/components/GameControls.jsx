@@ -1,53 +1,51 @@
-import { FlipVertical, RotateCcw, Undo2 } from 'lucide-react';
-
-const LEVELS = [
-  { label: 'Easy', depth: 2 },
-  { label: 'Medium', depth: 8 },
-  { label: 'Hard', depth: 15 },
-];
+const IconNew  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>;
+const IconUndo = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>;
+const IconFlip = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>;
 
 export function GameControls({
   difficulty,
-  setDifficulty,
-  onNewGame,
-  onUndo,
-  onFlipBoard,
-  isThinking,
-  canUndo,
+  onNewGame, onUndo, onFlipBoard,
+  isThinking, canUndo,
 }) {
   return (
-    <div className="game-controls">
-      <div className="controls-heading">
-        <span className="section-kicker">Controls</span>
-        <p>Tune the engine strength, reset the board, or flip your view.</p>
+    <div className="controls-section">
+      <div className="controls-label">Controls</div>
+
+      {/* Difficulty info (read-only — change via New Game) */}
+      <div className="difficulty-info-row">
+        <span className="difficulty-label">Difficulty</span>
+        <span className="difficulty-badge">{difficulty?.label ?? 'Medium'} · depth {difficulty?.depth ?? 8}</span>
       </div>
 
-      <div className="control-group">
-        <label htmlFor="difficulty">Difficulty:</label>
-        <select
-          id="difficulty"
-          value={difficulty}
-          onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
+      <div className="action-grid">
+        <button
+          onClick={onNewGame}
           disabled={isThinking}
-          className="difficulty-select"
+          className="action-btn primary-action"
+          title="New Game — returns to setup"
         >
-          {LEVELS.map((level) => (
-            <option value={level.depth} key={level.depth}>
-              {level.label} - depth {level.depth}
-            </option>
-          ))}
-        </select>
-      </div>
+          <IconNew />
+          <span className="action-btn-label">New</span>
+        </button>
 
-      <div className="button-group">
-        <button onClick={onNewGame} disabled={isThinking} className="control-btn primary">
-          <RotateCcw size={16} /> New Game
+        <button
+          onClick={onUndo}
+          disabled={!canUndo || isThinking}
+          className="action-btn"
+          title="Undo last move"
+        >
+          <IconUndo />
+          <span className="action-btn-label">Undo</span>
         </button>
-        <button onClick={onUndo} disabled={!canUndo} className="control-btn secondary">
-          <Undo2 size={16} /> Undo
-        </button>
-        <button onClick={onFlipBoard} disabled={isThinking} className="control-btn secondary">
-          <FlipVertical size={16} /> Flip Board
+
+        <button
+          onClick={onFlipBoard}
+          disabled={isThinking}
+          className="action-btn"
+          title="Flip board view"
+        >
+          <IconFlip />
+          <span className="action-btn-label">Flip</span>
         </button>
       </div>
     </div>

@@ -11,48 +11,39 @@ export const MoveHistory = memo(function MoveHistory({ history, pgn }) {
 
   const movePairs = useMemo(() => {
     const pairs = [];
-
     for (let i = 0; i < history.length; i += 2) {
-      pairs.push({
-        white: history[i],
-        black: history[i + 1] ? history[i + 1] : null,
-        index: Math.floor(i / 2) + 1,
-      });
+      pairs.push({ white: history[i], black: history[i + 1] || null, index: Math.floor(i / 2) + 1 });
     }
-
     return pairs;
   }, [history]);
 
+  const lastPairIndex = movePairs.length - 1;
+
   return (
-    <div className="move-history-container">
-      <div className="move-history-title">
-        <div>
-          <span className="section-kicker">Notation</span>
-          <h3>Move History</h3>
-        </div>
-      </div>
+    <>
       <div className="move-history-list" ref={scrollRef}>
         {movePairs.length === 0 ? (
-          <p className="no-moves">No moves yet.</p>
+          <p className="no-moves-msg">No moves yet. You play White.</p>
         ) : (
-          <table className="move-history-table">
-            <tbody>
-              {movePairs.map((pair) => (
-                <tr key={pair.index} className="move-row">
-                  <td className="move-number">{pair.index}.</td>
-                  <td className="move-white">{pair.white.san}</td>
-                  <td className="move-black">{pair.black ? pair.black.san : ''}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          movePairs.map((pair, idx) => (
+            <div
+              key={pair.index}
+              className={`move-row${idx === lastPairIndex ? ' active-move' : ''}`}
+            >
+              <span className="move-num">{pair.index}.</span>
+              <span className="move-san">{pair.white.san}</span>
+              <span className={`move-san${!pair.black ? ' pending' : ''}`}>
+                {pair.black ? pair.black.san : '...'}
+              </span>
+            </div>
+          ))
         )}
       </div>
 
-      <div className="pgn-panel">
+      <div className="pgn-section">
         <span className="pgn-label">PGN</span>
-        <p>{pgn || 'Game PGN will appear here.'}</p>
+        <p className="pgn-text">{pgn || 'Game PGN will appear here.'}</p>
       </div>
-    </div>
+    </>
   );
 });

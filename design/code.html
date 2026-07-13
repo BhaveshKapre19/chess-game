@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grandmaster Elite | AI Practice</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Hanken+Grotesk:wght@400;600;700&amp;family=Geist:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&amp;family=Playfair+Display:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(31, 31, 32, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(233, 193, 118, 0.1);
+        }
+        .board-shadow {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(233, 193, 118, 0.05);
+        }
+        .active-move-indicator {
+            border-left: 3px solid #e9c176;
+            background: linear-gradient(90deg, rgba(233, 193, 118, 0.1) 0%, transparent 100%);
+        }
+        /* Custom scrollbar for move history */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #151408;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #604403;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#5d4201",
+                      "on-tertiary": "#303030",
+                      "surface-container": "#222013",
+                      "on-error-container": "#ffdad6",
+                      "on-error": "#690005",
+                      "error-container": "#93000a",
+                      "primary-fixed": "#e5e2e3",
+                      "on-secondary-container": "#dab36a",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "surface-container-low": "#1e1c10",
+                      "secondary-fixed": "#ffdea5",
+                      "tertiary-container": "#1a1a1a",
+                      "inverse-on-surface": "#333123",
+                      "surface-variant": "#373527",
+                      "on-tertiary-fixed": "#1b1c1c",
+                      "surface-tint": "#c8c6c7",
+                      "secondary": "#e9c176",
+                      "tertiary": "#c8c6c6",
+                      "on-surface": "#e8e2cf",
+                      "background": "#151408",
+                      "on-primary-fixed-variant": "#474647",
+                      "on-primary-fixed": "#1b1b1c",
+                      "tertiary-fixed": "#e4e2e1",
+                      "secondary-container": "#604403",
+                      "error": "#ffb4ab",
+                      "secondary-fixed-dim": "#e9c176",
+                      "on-primary-container": "#848283",
+                      "on-primary": "#303031",
+                      "primary": "#c8c6c7",
+                      "surface-bright": "#3c392c",
+                      "surface-container-lowest": "#100e04",
+                      "outline-variant": "#46474a",
+                      "primary-fixed-dim": "#c8c6c7",
+                      "outline": "#909094",
+                      "inverse-surface": "#e8e2cf",
+                      "surface-container-high": "#2c2a1d",
+                      "on-background": "#e8e2cf",
+                      "on-secondary": "#412d00",
+                      "inverse-primary": "#5f5e5f",
+                      "surface-container-highest": "#373527",
+                      "surface": "#151408",
+                      "on-tertiary-container": "#838282",
+                      "tertiary-fixed-dim": "#c8c6c6",
+                      "on-secondary-fixed": "#261900",
+                      "primary-container": "#1a1a1b",
+                      "surface-dim": "#151408",
+                      "on-surface-variant": "#c7c6ca"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "unit": "4px",
+                      "board-margin": "32px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "lg": "24px",
+                      "xl": "48px",
+                      "container-max": "1200px"
+              },
+              "fontFamily": {
+                      "body-md": ["Hanken Grotesk"],
+                      "headline-lg": ["Playfair Display"],
+                      "display-lg": ["Playfair Display"],
+                      "mono-stats": ["Geist"],
+                      "label-caps": ["Hanken Grotesk"],
+                      "title-md": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "mono-stats": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "title-md": ["20px", {"lineHeight": "28px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary/30 selection:text-secondary">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-background border-b border-secondary/10 flex justify-between items-center w-full px-lg py-md max-w-container-max mx-auto h-20">
+<div class="flex items-center gap-lg">
+<h1 class="font-display-lg text-display-lg text-secondary tracking-tight">Grandmaster Elite</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden md:flex items-center gap-lg mr-xl">
+<a class="text-secondary font-bold border-b-2 border-secondary hover:text-secondary transition-colors duration-300" href="#">AI Challenge</a>
+<a class="text-on-surface-variant font-medium hover:text-secondary transition-colors duration-300" href="#">Lobby</a>
+<a class="text-on-surface-variant font-medium hover:text-secondary transition-colors duration-300" href="#">Analytics</a>
+<a class="text-on-surface-variant font-medium hover:text-secondary transition-colors duration-300" href="#">Rankings</a>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors">settings</button>
+<div class="w-10 h-10 rounded-full border border-secondary/20 overflow-hidden ml-md">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a sophisticated chess player in their early thirties, wearing a dark turtleneck against a soft-focus studio background with warm golden lighting. The aesthetic is high-fidelity, polished, and fits a luxury gaming environment with deep charcoal and burnished gold tones. The mood is focused and intellectual." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmO2C12k2oYxXGN-uiwWNb6fHW7ZkMgWYHCWrPWxkVlt5e3yH0C20LN-HOFIxjZgysd2NiwABFMR4MAAAW3mOf29K9CWkAyZMYsC_oQ8pSDPDRhN7WW8wEkgFhY-uHQwELs69YoJnbLwOQwn6dbkYdM-qebE9icJGYJH-1zaMTA8DfucXFPcAGBglRhLmF6GWxyXK2sIoqClWL8MQYXmN9YcVTAEZIJFsOXxRfiVvQUZvBhtcCLs4x_zkWYP1FfZ_cxv1PU0Gpklk"/>
+</div>
+</div>
+</header>
+<!-- Side Navigation Shell -->
+<nav class="fixed left-0 top-0 h-full z-40 flex flex-col pt-24 pb-lg bg-surface-container border-r border-secondary/10 shadow-sm w-64 hidden md:flex">
+<div class="px-lg mb-xl">
+<div class="flex items-center gap-md p-md rounded-lg bg-secondary-container/10 border border-secondary/10">
+<div class="w-12 h-12 bg-secondary/20 flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div>
+<p class="text-title-md font-title-md text-secondary">Grandmaster</p>
+<p class="text-label-caps font-label-caps text-on-surface-variant opacity-70">Elo 2450</p>
+</div>
+</div>
+</div>
+<div class="flex-1 space-y-xs">
+<a class="text-secondary bg-secondary-container/20 border-l-4 border-secondary flex items-center gap-md px-lg py-md transition-all" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-label-caps font-label-caps">Play</span>
+</a>
+<a class="text-on-surface-variant flex items-center gap-md px-lg py-md hover:bg-surface-container-highest hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-caps font-label-caps">Lobby</span>
+</a>
+<a class="text-on-surface-variant flex items-center gap-md px-lg py-md hover:bg-surface-container-highest hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-label-caps font-label-caps">Analytics</span>
+</a>
+<a class="text-on-surface-variant flex items-center gap-md px-lg py-md hover:bg-surface-container-highest hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="text-label-caps font-label-caps">Rankings</span>
+</a>
+</div>
+<div class="mt-auto px-lg pt-lg border-t border-secondary/10 space-y-xs">
+<a class="text-on-surface-variant flex items-center gap-md py-sm hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="text-label-caps font-label-caps">Help</span>
+</a>
+<a class="text-on-surface-variant flex items-center gap-md py-sm hover:text-secondary transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-label-caps font-label-caps">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Gameplay Canvas -->
+<main class="md:ml-64 pt-24 min-h-screen grid grid-cols-12 gap-lg p-lg">
+<!-- Left: Centerpiece Board Area -->
+<div class="col-span-12 lg:col-span-8 flex flex-col items-center justify-center space-y-md">
+<!-- Opponent Card -->
+<div class="w-full max-w-[640px] flex justify-between items-end pb-sm border-b border-secondary/5">
+<div class="flex items-center gap-md">
+<div class="relative">
+<div class="w-12 h-12 rounded bg-surface-container-highest border border-secondary/10 overflow-hidden"><div class="w-full h-full flex items-center justify-center bg-secondary/10"><span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">memory</span></div></div>
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+</div>
+<div>
+<h3 class="text-title-md font-title-md text-on-surface">DeepThought AI</h3>
+<p class="text-label-caps font-label-caps text-on-secondary-container">AI LEVEL 8 | 3100</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="px-md py-xs bg-surface-container-low border border-secondary/20 rounded-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-sm">schedule</span>
+<span class="font-mono-stats text-mono-stats text-on-surface tracking-wider">04:12</span>
+</div>
+</div>
+</div>
+<!-- The Chess Board (Ivory & Ebony Marble) -->
+<div class="relative w-full aspect-square max-w-[640px] board-shadow group">
+<div class="grid grid-cols-8 grid-rows-8 w-full h-full border-4 border-surface-container-highest rounded-sm overflow-hidden">
+<!-- Generation of board squares -->
+<!-- Row 1-8 Alternating Ivory/Ebony -->
+<!-- SCRIPT will populate this or we can define CSS grid pattern -->
+<style>
+                        .sq-ivory { background: #e5e2e3; background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 100%); }
+                        .sq-ebony { background: #1f1f20; background-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.4) 0%, transparent 100%); }
+                    </style>
+<!-- Visual representation of 8x8 (simplified for prompt compliance) -->
+<div class="sq-ivory flex items-center justify-center relative"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div>
+<div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div>
+<div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div>
+<div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div>
+<div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div>
+<div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div>
+<div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div>
+<div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div><div class="sq-ebony"></div><div class="sq-ivory"></div>
+<!-- Absolute pieces overlay (Example placement) -->
+<div class="absolute inset-0 grid grid-cols-8 grid-rows-8 pointer-events-none">
+<!-- Black pieces -->
+<div class="col-start-4 row-start-1 flex items-center justify-center"><span class="material-symbols-outlined text-4xl text-black drop-shadow-md" style="font-variation-settings: 'FILL' 1;">chess_king</span></div>
+<!-- White pieces -->
+<div class="col-start-5 row-start-8 flex items-center justify-center"><span class="material-symbols-outlined text-4xl text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">chess_king</span></div>
+<div class="col-start-4 row-start-6 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-secondary/20 blur-md absolute"></div>
+<span class="material-symbols-outlined text-4xl text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">chess_knight</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Player Card -->
+<div class="w-full max-w-[640px] flex justify-between items-start pt-sm border-t border-secondary/5">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded bg-surface-container-highest border border-secondary/40 overflow-hidden shadow-[0_0_15px_rgba(233,193,118,0.2)]">
+<img class="w-full h-full object-cover" data-alt="A close-up profile picture of a young, confident chess grandmaster with sharp features and thoughtful eyes. The lighting is dramatic, high-contrast chiaroscuro, highlighting the texture of a premium dark wool blazer. The background is a dimly lit, luxurious library with subtle hints of gold-bound books. Elegant, modern, and high-fidelity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZg_JOFCL1GPNI1nwckVRDlCnKKnjqJlh5obHHT88YglW3chwyv1MQn1Y5nu9vnYogWKPlIQkJXpds9QjpNqw0ji2PS2gxW6xmB8ZgZnWbjLyrmE8lajQEXMBycW5q6dL7weM28DcHPbBE6wC25iiS25Vsxg-BPhWA7tO42LclioRiAa4OvvvfFkD0Zv2-w6nWXRiwDICm7_suPH_P-FgauMT_sqa7xvMhiQ-5tQ_bPzHOYC8abF5_kLUSvsf6Dgrd9RumDjJf09Y"/>
+</div>
+<div>
+<h3 class="text-title-md font-title-md text-secondary">Grandmaster</h3>
+<p class="text-label-caps font-label-caps text-on-surface-variant">ELITE | 2450</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="px-lg py-sm bg-secondary-container border-2 border-secondary rounded-lg flex items-center gap-sm shadow-lg">
+<span class="material-symbols-outlined text-secondary text-lg">timer</span>
+<span class="font-mono-stats text-title-md font-bold text-white tracking-widest">02:54</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Move History & Controls -->
+<div class="col-span-12 lg:col-span-4 flex flex-col h-full space-y-md">
+<!-- Move History Panel -->
+<div class="flex-1 glass-panel rounded-xl flex flex-col overflow-hidden">
+<div class="p-md border-b border-secondary/10 flex justify-between items-center bg-surface-container-low">
+<h2 class="text-label-caps font-label-caps text-secondary uppercase tracking-[0.2em]">Move History</h2>
+<div class="flex gap-sm">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary text-sm">download</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary text-sm">share</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-sm space-y-unit">
+<!-- Algebraic Notation Rows -->
+<div class="grid grid-cols-12 gap-unit p-sm hover:bg-surface-container-highest transition-colors rounded">
+<span class="col-span-2 text-on-surface-variant text-xs font-mono-stats self-center">1.</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">e4</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">e5</span>
+</div>
+<div class="grid grid-cols-12 gap-unit p-sm hover:bg-surface-container-highest transition-colors rounded">
+<span class="col-span-2 text-on-surface-variant text-xs font-mono-stats self-center">2.</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">Nf3</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">Nc6</span>
+</div>
+<div class="grid grid-cols-12 gap-unit p-sm hover:bg-surface-container-highest transition-colors rounded">
+<span class="col-span-2 text-on-surface-variant text-xs font-mono-stats self-center">3.</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">Bb5</span>
+<span class="col-span-5 text-on-surface font-title-md px-sm">a6</span>
+</div>
+<div class="grid grid-cols-12 gap-unit p-sm active-move-indicator rounded">
+<span class="col-span-2 text-secondary text-xs font-mono-stats self-center">4.</span>
+<span class="col-span-5 text-secondary font-title-md px-sm font-bold">Ba4</span>
+<span class="col-span-5 text-on-surface-variant font-title-md px-sm italic opacity-50">...</span>
+</div>
+</div>
+<!-- Chat Integration (Subtle) -->
+<div class="p-md bg-surface-container-lowest border-t border-secondary/10">
+<div class="h-32 overflow-y-auto mb-sm text-sm space-y-sm">
+<p><span class="text-on-secondary-container font-bold">Magnus_V:</span> Good luck, have fun.</p>
+<p><span class="text-secondary font-bold">You:</span> Same to you.</p>
+</div>
+<div class="relative">
+<input class="w-full bg-background border-none border-b-2 border-secondary/20 focus:border-secondary focus:ring-0 text-body-md transition-all placeholder:text-on-surface-variant/40" placeholder="Send a message..." type="text"/>
+<button class="absolute right-0 bottom-1 material-symbols-outlined text-secondary">send</button>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="grid grid-cols-3 gap-md">
+<button class="flex flex-col items-center justify-center gap-xs py-md border border-secondary/20 rounded-xl bg-surface-container hover:bg-secondary/10 hover:border-secondary/50 transition-all active:scale-95 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">flag</span>
+<span class="text-label-caps font-label-caps text-on-surface-variant group-hover:text-secondary">Resign</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-xs py-md border border-secondary/20 rounded-xl bg-surface-container hover:bg-secondary/10 hover:border-secondary/50 transition-all active:scale-95 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">handshake</span>
+<span class="text-label-caps font-label-caps text-on-surface-variant group-hover:text-secondary">Draw</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-xs py-md border-2 border-secondary rounded-xl bg-secondary-container/20 hover:bg-secondary-container/40 transition-all active:scale-95 group relative overflow-hidden shadow-[0_0_20px_rgba(233,193,118,0.1)]">
+<div class="absolute inset-0 bg-gradient-to-tr from-secondary/10 to-transparent opacity-50"></div>
+<span class="material-symbols-outlined text-secondary">lightbulb</span>
+<span class="text-label-caps font-label-caps text-secondary font-bold">Hint</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Floating Atmosphere Elements -->
+<div class="fixed inset-0 pointer-events-none z-[-1] opacity-20">
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                // Subtle haptic or sound effect logic could go here
+            });
+        });
+
+        // Simple board square interaction simulation
+        const squares = document.querySelectorAll('.sq-ivory, .sq-ebony');
+        squares.forEach(sq => {
+            sq.addEventListener('mousedown', function() {
+                this.classList.add('brightness-125');
+                setTimeout(() => this.classList.remove('brightness-125'), 200);
+            });
+        });
+    </script>
+</body></html>

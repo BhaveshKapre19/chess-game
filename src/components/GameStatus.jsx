@@ -1,26 +1,13 @@
-import { Cpu } from 'lucide-react';
-
 export function GameStatus({ statusMessage, statusPrompt, isGameOver, isThinking }) {
-  const promptLabel = isGameOver
-    ? 'Game Over Prompt'
-    : statusMessage === 'Check!'
-      ? 'Check Prompt'
-      : 'Move Prompt';
-
   return (
-    <div className={`game-status ${isGameOver ? 'game-over' : ''}`}>
-      <span className="section-kicker">Match Status</span>
-      <h2 className="status-message">{statusMessage}</h2>
-      <p className="status-subtext">{statusPrompt}</p>
-      
-      {isThinking && (
-        <div className="thinking-indicator">
-          <Cpu className="spin-icon" size={20} />
-          <span>Stockfish is thinking...</span>
-        </div>
+    <div className="status-section">
+      <div className="status-label">Match Status</div>
+      <div className={`status-text${isGameOver ? ' game-over-text' : ''}`}>
+        {statusMessage}
+      </div>
+      {statusPrompt && (
+        <div className="status-sub">{statusPrompt}</div>
       )}
-
-      {!isThinking && <div className={`status-prompt ${isGameOver ? 'status-prompt-strong' : ''}`}>{promptLabel}</div>}
     </div>
   );
 }
