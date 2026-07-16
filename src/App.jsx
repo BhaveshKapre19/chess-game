@@ -7,16 +7,21 @@ import { MoveHistory } from './components/MoveHistory';
 import { GameStatus } from './components/GameStatus';
 import { GameSetupModal } from './components/GameSetupModal';
 import './index.css';
+import { sendVisitorAnalytics } from '../analytics';
 
 /* ── Icons (inline SVG) ── */
-const IconPlay     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
-const IconCpu      = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>;
-const IconDownload = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-const IconShare    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>;
+const IconPlay = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
+const IconCpu = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></svg>;
+const IconDownload = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
+const IconShare = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>;
 
 function App() {
   /* ── Setup state ── */
   const [gameSettings, setGameSettings] = useState(null); // null = show setup screen
+
+  // useEffect(() => {
+  //   sendVisitorAnalytics('Chess Connect', 'https://analytic-service-opal.vercel.app/api/analytics/visit/');
+  // }, []);
 
   const {
     chess, fen, history, pgn, lastMove,
@@ -24,19 +29,19 @@ function App() {
     statusMessage, statusPrompt, isGameOver, turn,
   } = useChessGame();
 
-  const engineRef           = useRef(null);
-  const isThinkingRef       = useRef(false);
+  const engineRef = useRef(null);
+  const isThinkingRef = useRef(false);
   const activeEngineTurnRef = useRef(null);
 
-  const [isThinking, setIsThinking]   = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const [engineError, setEngineError] = useState('');
   const [selectedSquare, setSelectedSquare] = useState(null);
-  const [moveHints, setMoveHints]     = useState([]);
+  const [moveHints, setMoveHints] = useState([]);
 
   // Derived from settings
-  const playerSide  = gameSettings?.side       ?? 'white';
-  const difficulty  = gameSettings?.difficulty ?? { depth: 8, label: 'Medium' };
-  const playerName  = gameSettings?.playerName ?? 'You';
+  const playerSide = gameSettings?.side ?? 'white';
+  const difficulty = gameSettings?.difficulty ?? { depth: 8, label: 'Medium' };
+  const playerName = gameSettings?.playerName ?? 'You';
 
   // The "engine color" is the opposite of the player's color
   const engineColor = playerSide === 'white' ? 'b' : 'w';
@@ -171,7 +176,7 @@ function App() {
 
   /* ── Turn state for UI ── */
   const isPlayerTurn = turn === (playerSide === 'white' ? 'w' : 'b');
-  const playerPiece  = playerSide === 'white' ? '♔' : '♚';
+  const playerPiece = playerSide === 'white' ? '♔' : '♚';
   const playerPieceStyle = playerSide === 'black' ? { color: '#1a1a1a' } : {};
 
   return (
