@@ -1,4 +1,4 @@
-export function GameStatus({ statusMessage, statusPrompt, isGameOver, isThinking }) {
+export function GameStatus({ statusMessage, statusPrompt, isGameOver }) {
   return (
     <div className="status-section">
       <div className="status-label">Match Status</div>
